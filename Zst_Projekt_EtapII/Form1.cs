@@ -225,7 +225,7 @@ namespace Zst_Projekt_EtapII
                 char[] MyChar = { '.', 'x', 'm', 'l'};
                 MIBname = MIBname.TrimEnd(MyChar);
                 
-                string showString = "MIB has been successfully loaded!" + Environment.NewLine + "MIB name: " + MIBname + Environment.NewLine + "Ammount of objects: 4e" + objectAmmount;
+                string showString = "MIB has been successfully loaded!" + Environment.NewLine + "MIB name: " + MIBname + Environment.NewLine + "Ammount of objects: " + objectAmmount;
                 MessageBox.Show(showString);
             }
             catch

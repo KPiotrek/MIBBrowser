@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using SnmpSharpNet;
 //snmpsharpnet.com <- tutaj do pobrania ta biblioteka
@@ -13,25 +7,40 @@ using SnmpSharpNet;
 using System.Timers;
 using System.Net;
 using System.Xml;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Data;
 
 namespace Zst_Projekt_EtapII
 {
     public partial class Form1 : Form
     {
+        #region SNMP_Variables
         string resultString;
         int watchIterations;
         System.Timers.Timer GeneratorsTimer = new System.Timers.Timer();
         List<string> lstOID = new List<string>();
         List<string> lstObjectName = new List<string>();
         int objectAmmount;
+        #endregion
+
+        #region Database_Variables
+        private SqlConnection sqlConnection;
+        private SqlCommand sqlCommand;
+        private SqlDataAdapter sqlDataAdapter;
+        private string sqlConnectionString;
+        private string sqlQuery;
+        #endregion
 
         public Form1()
         {
             InitializeComponent();
+
+            InitializeDataBaseComponent();
         }
 
-
-        private void btnGet_Click(object sender, EventArgs e)
+        #region SNMP_Methodes
+        private void button_Get_Click(object sender, EventArgs e)
         {
 
             OctetString community = new OctetString("public");
@@ -75,14 +84,20 @@ namespace Zst_Projekt_EtapII
                         SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString(),
                         result.Pdu.VbList[0].Value.ToString());
                     MessageBox.Show(resultString);
-                   
+
+                    //DATABASE adding
+                    string newName = "jakas nazwa nie wiem skad";
+                    string newOid = result.Pdu.VbList[0].Oid.ToString();
+                    string newValue = result.Pdu.VbList[0].Value.ToString();
+                    string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
+                    string newIp = "jakies_ip";
+
+                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
                 }
-
-
             }
         }
 
-        private void btnGetNext_Click(object sender, EventArgs e)
+        private void button_GetNext_Click(object sender, EventArgs e)
         {
             OctetString community = new OctetString("public");
             AgentParameters param = new AgentParameters(community);
@@ -129,7 +144,7 @@ namespace Zst_Projekt_EtapII
             
         }
 
-        private void btnWatch_Click(object sender, EventArgs e)
+        private void button_Watch_Click(object sender, EventArgs e)
         {
             watchIterations = 0; ;
             GeneratorsTimer.Enabled = true;
@@ -194,7 +209,7 @@ namespace Zst_Projekt_EtapII
 
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void button_Load_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
 
@@ -245,6 +260,179 @@ namespace Zst_Projekt_EtapII
                 }
             return oid;
 
+        }
+        #endregion
+
+        #region Database_Methodes
+
+
+
+        #endregion
+        /*
+         * Metoda inicjalizuje wszystkie zmienne niezbędne do poprawnej pracy bazy danych.
+         */
+        private void InitializeDataBaseComponent()
+        {
+            //ustawianie connectionString'a - jest to string opisujący gdzie znajduje sie konkretna baza danych
+            sqlConnectionString = ConfigurationManager.ConnectionStrings["Zst_Projekt_EtapII.Properties.Settings.DatabaseConnectionString"].ConnectionString;
+
+            //czyścimy baze danych
+            button_RemoveAll.PerformClick();
+
+            //uzupełniam comboBoxa wartościami takimi samymi jak nazwy kolumn
+            comboBox_SearchType.Items.Add("Name");
+            comboBox_SearchType.Items.Add("OID");
+            comboBox_SearchType.Items.Add("Value");
+            comboBox_SearchType.Items.Add("Type");
+            comboBox_SearchType.Items.Add("IP");
+
+        }
+        /*
+         * Metoda pobiera wszystkie dane z bazy danych i wyświetla je w dataGridView
+         * - w bazie danych znajduje się tylko jedna tabela MainTable
+         */
+        private void button_Refresh_Click(object sender, EventArgs e)
+        {
+            //tworzę polecenie sql zalezne od wyboru użytkownika
+            sqlQuery = "SELECT * FROM MainTable";
+
+            //using powoduje, że po wyjściu z klamer obiekty się zamkną samoczynnie
+            //dataAdapter samoczynnie otwiera połaczenie, wiec nie trzeba pisac sqlConnection.Open();
+            using (sqlConnection = new SqlConnection(sqlConnectionString))
+            using (sqlCommand = new SqlCommand(sqlQuery, sqlConnection))
+            using (sqlDataAdapter = new SqlDataAdapter(sqlCommand))
+            {
+                DataTable sqlTable = new DataTable();
+                sqlDataAdapter.Fill(sqlTable);
+
+                //pokazywanie tabeli zdarzeń
+                dataGridView_Database.DataSource = sqlTable;
+            }
+        }
+
+        /*
+         * Metoda usuwa zaznaczony wiersz logów.
+         */
+        private void button_Remove_Click(object sender, EventArgs e)
+        {
+            string logIndex;
+
+            if (dataGridView_Database.CurrentCell == null)
+                MessageBox.Show("Please, choose the row to remove!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else
+            {
+                int rowindex = dataGridView_Database.CurrentCell.RowIndex;
+
+                logIndex = dataGridView_Database.Rows[rowindex].Cells[0].Value.ToString();
+
+                //DELETE FROM table_name
+                //WHERE some_column = some_value;
+                //usuwa zaznaczony wiersz
+                sqlQuery = "DELETE FROM MainTable WHERE Id ='" + logIndex + "'";
+
+                using (sqlConnection = new SqlConnection(sqlConnectionString))
+                using (sqlCommand = new SqlCommand(sqlQuery, sqlConnection))
+                {
+                    //otwarcie połączenia
+                    sqlConnection.Open();
+
+                    //wykonuje instrukcję
+                    sqlCommand.ExecuteNonQuery();
+                }
+
+                //odświeżam widok tabeli zaprezentowanej w polu
+                button_Refresh.PerformClick();
+
+            }
+        }
+
+        /*
+         * Metoda usuwa całą zawartośc bazy danych i zeruje licznik ID
+         */
+        private void button_RemoveAll_Click(object sender, EventArgs e)
+        {
+            //tworzę komendę usuwającą wiersze
+            string tmpSqlQueryDeleteRows = "DELETE * FROM MainTable; ";
+
+            //tworzę komendę resetującą samozwiększający się licznik id
+            string tmpSqlQueryRefreshIDQuery = "DBCC CHECKIDENT('MainTable', RESEED, 0)";
+
+            sqlQuery = tmpSqlQueryDeleteRows + tmpSqlQueryRefreshIDQuery;
+
+            using (sqlConnection = new SqlConnection(sqlConnectionString))
+            using (sqlCommand = new SqlCommand(sqlQuery, sqlConnection))
+            {
+                //otwarcie połączenia
+                sqlConnection.Open();
+
+                //wykonuje instrukcję
+                sqlCommand.ExecuteNonQuery();
+            }
+
+            //wyświetlanie komunikatu
+            MessageBox.Show("RemovaAll DONE", "INFORMATION");
+
+            //odświeżam widok tabeli zaprezentowanej w polu
+            button_Refresh.PerformClick();
+
+        }
+
+        /*
+         * Metoda usuwa całą zawartośc bazy danych i zeruje licznik ID
+         */
+        private void button_Search_Click(object sender, EventArgs e)
+        {
+            // TRZEBA TU SPRAWDZIC CZY WYBRALO SIE COS W PARAMETRACH
+            if ( (comboBox_SearchType.SelectedText != "" )&& (textBox_Search.SelectedText != "") )
+            {
+                //tworzę polecenie sql zalezne od wyboru użytkownika
+                //SELECT * FROM eventType1 WHERE LogClientName = 'pop';
+                sqlQuery = "SELECT * FROM MainTable WHERE " + comboBox_SearchType.SelectedText
+                    + " = '" + textBox_Search.SelectedText + "';";
+
+                //comboBox - nazwa kolumny
+                //textBox - szukana wartość (zawsze to będzie string)
+
+                using (sqlConnection = new SqlConnection(sqlConnectionString))
+                using (sqlCommand = new SqlCommand(sqlQuery, sqlConnection))
+                using (sqlDataAdapter = new SqlDataAdapter(sqlCommand))
+                {
+                    DataTable sqlTable = new DataTable();
+                    sqlDataAdapter.Fill(sqlTable);
+
+                    //pokazywanie tabeli zdarzeń
+                    dataGridView_Database.DataSource = sqlTable;
+                }
+            }
+            else
+                MessageBox.Show("Please, choose the right item!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        /*
+         * Metoda dodaje nowy wpis do bazy danych.
+         */
+        private void AddItemToDatabase(string name, string oid, string value, string type, string ip)
+        {
+            sqlQuery = "INSERT INTO MainTable VALUES (@Name, @OID, @Value, @Type, @IP)";
+
+            //using powoduje, że po wyjściu z klamer obiekty się zamkną samoczynnie
+            //dataAdapter samoczynnie otwiera połaczenie, wiec nie trzeba pisac sqlConnection.Open();
+            using (sqlConnection = new SqlConnection(sqlConnectionString))
+            using (sqlCommand = new SqlCommand(sqlQuery, sqlConnection))
+            {
+
+                sqlCommand.Parameters.AddWithValue("@Name", name);
+                sqlCommand.Parameters.AddWithValue("@OID", oid);
+                sqlCommand.Parameters.AddWithValue("@Value", value);
+                sqlCommand.Parameters.AddWithValue("@Type", type);
+                sqlCommand.Parameters.AddWithValue("@IP", ip);
+            }
+
+            //otwieram połączenie
+            sqlConnection.Open();
+
+            //wykonuje instrukcję
+            sqlCommand.ExecuteNonQuery();
         }
     }
 }

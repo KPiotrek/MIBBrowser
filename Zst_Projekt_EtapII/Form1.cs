@@ -352,7 +352,7 @@ namespace Zst_Projekt_EtapII
         private void button_RemoveAll_Click(object sender, EventArgs e)
         {
             //tworzę komendę usuwającą wiersze
-            string tmpSqlQueryDeleteRows = "DELETE * FROM MainTable; ";
+            string tmpSqlQueryDeleteRows = "DELETE FROM MainTable; ";
 
             //tworzę komendę resetującą samozwiększający się licznik id
             string tmpSqlQueryRefreshIDQuery = "DBCC CHECKIDENT('MainTable', RESEED, 0)";
@@ -370,7 +370,7 @@ namespace Zst_Projekt_EtapII
             }
 
             //wyświetlanie komunikatu
-            MessageBox.Show("RemovaAll DONE", "INFORMATION");
+            MessageBox.Show("Remove_All DONE", "INFORMATION");
 
             //odświeżam widok tabeli zaprezentowanej w polu
             button_Refresh.PerformClick();
@@ -383,12 +383,16 @@ namespace Zst_Projekt_EtapII
         private void button_Search_Click(object sender, EventArgs e)
         {
             // TRZEBA TU SPRAWDZIC CZY WYBRALO SIE COS W PARAMETRACH
-            if ( (comboBox_SearchType.SelectedText != "" )&& (textBox_Search.SelectedText != "") )
+            if ((comboBox_SearchType.SelectedText != "") || (textBox_Search.SelectedText != ""))
+            {
+                MessageBox.Show("Please, choose the right item!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
             {
                 //tworzę polecenie sql zalezne od wyboru użytkownika
                 //SELECT * FROM eventType1 WHERE LogClientName = 'pop';
                 sqlQuery = "SELECT * FROM MainTable WHERE " + comboBox_SearchType.SelectedText
-                    + " = '" + textBox_Search.SelectedText + "';";
+                    + " = '" + textBox_Search.Text + "';";
 
                 //comboBox - nazwa kolumny
                 //textBox - szukana wartość (zawsze to będzie string)
@@ -404,8 +408,7 @@ namespace Zst_Projekt_EtapII
                     dataGridView_Database.DataSource = sqlTable;
                 }
             }
-            else
-                MessageBox.Show("Please, choose the right item!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
         }
 
         /*
@@ -420,19 +423,21 @@ namespace Zst_Projekt_EtapII
             using (sqlConnection = new SqlConnection(sqlConnectionString))
             using (sqlCommand = new SqlCommand(sqlQuery, sqlConnection))
             {
-
                 sqlCommand.Parameters.AddWithValue("@Name", name);
                 sqlCommand.Parameters.AddWithValue("@OID", oid);
                 sqlCommand.Parameters.AddWithValue("@Value", value);
                 sqlCommand.Parameters.AddWithValue("@Type", type);
                 sqlCommand.Parameters.AddWithValue("@IP", ip);
+
+                //otwieram połączenie
+                sqlConnection.Open();
+
+                //wykonuje instrukcję
+                sqlCommand.ExecuteNonQuery();
             }
 
-            //otwieram połączenie
-            sqlConnection.Open();
-
-            //wykonuje instrukcję
-            sqlCommand.ExecuteNonQuery();
+            //aktualizuję wyświetlania
+            button_Refresh.PerformClick();
         }
     }
 }

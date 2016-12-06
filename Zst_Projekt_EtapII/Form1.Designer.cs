@@ -187,9 +187,10 @@
             // 
             this.dataGridView_Database.AllowUserToAddRows = false;
             this.dataGridView_Database.AllowUserToDeleteRows = false;
+            this.dataGridView_Database.AllowUserToResizeColumns = false;
             this.dataGridView_Database.AllowUserToResizeRows = false;
             this.dataGridView_Database.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.dataGridView_Database.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
+            this.dataGridView_Database.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView_Database.BackgroundColor = System.Drawing.SystemColors.Window;
             this.dataGridView_Database.CausesValidation = false;
             this.dataGridView_Database.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;

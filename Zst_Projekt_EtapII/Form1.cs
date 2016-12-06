@@ -22,6 +22,7 @@ namespace Zst_Projekt_EtapII
         List<string> lstOID = new List<string>();
         List<string> lstObjectName = new List<string>();
         int objectAmmount;
+        string agentsIP = "127.0.0.1";
         #endregion
 
         #region Database_Variables
@@ -46,7 +47,7 @@ namespace Zst_Projekt_EtapII
             OctetString community = new OctetString("public");
             AgentParameters param = new AgentParameters(community);
             param.Version = SnmpVersion.Ver2;
-            IpAddress agent = new IpAddress("127.0.0.1");
+            IpAddress agent = new IpAddress(agentsIP);
 
             UdpTarget target = new UdpTarget((IPAddress)agent, 161, 2000, 1);
             // Pdu class used for all requests
@@ -86,11 +87,11 @@ namespace Zst_Projekt_EtapII
                     MessageBox.Show(resultString);
 
                     //DATABASE adding
-                    string newName = "jakas nazwa nie wiem skad";
+                    string newName = cbObjects.Text;
                     string newOid = result.Pdu.VbList[0].Oid.ToString();
                     string newValue = result.Pdu.VbList[0].Value.ToString();
                     string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
-                    string newIp = "jakies_ip";
+                    string newIp = agentsIP;
 
                     AddItemToDatabase(newName, newOid, newValue, newType, newIp);
                 }
@@ -134,6 +135,15 @@ namespace Zst_Projekt_EtapII
                       SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString(),
                       result.Pdu.VbList[0].Value.ToString());
                     MessageBox.Show(resultString);
+
+                    //DATABASE adding
+                    string newName = cbObjects.Text;
+                    string newOid = result.Pdu.VbList[0].Oid.ToString();
+                    string newValue = result.Pdu.VbList[0].Value.ToString();
+                    string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
+                    string newIp = agentsIP;
+
+                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
                 }
             }
 
@@ -197,6 +207,14 @@ namespace Zst_Projekt_EtapII
                         watchIterations = watchIterations +1;
                         if (watchIterations > 5)
                         GeneratorsTimer.Enabled = false;
+                        //DATABASE adding
+                        string newName = cbObjects.Text;
+                        string newOid = result.Pdu.VbList[0].Oid.ToString();
+                        string newValue = result.Pdu.VbList[0].Value.ToString();
+                        string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
+                        string newIp = agentsIP;
+
+                        AddItemToDatabase(newName, newOid, newValue, newType, newIp);
                     }
 
                 }
@@ -274,7 +292,7 @@ namespace Zst_Projekt_EtapII
         private void InitializeDataBaseComponent()
         {
             //ustawianie connectionString'a - jest to string opisujący gdzie znajduje sie konkretna baza danych
-            sqlConnectionString = ConfigurationManager.ConnectionStrings["Zst_Projekt_EtapII.Properties.Settings.DatabaseConnectionString"].ConnectionString;
+            sqlConnectionString = ConfigurationManager.ConnectionStrings["Zst_Projekt_EtapII.Properties.Settings.ResponsesConnectionString"].ConnectionString;
 
             //czyścimy baze danych
             button_RemoveAll.PerformClick();

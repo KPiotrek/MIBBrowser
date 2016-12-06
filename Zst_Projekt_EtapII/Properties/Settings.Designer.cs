@@ -33,5 +33,16 @@ namespace Zst_Projekt_EtapII.Properties {
                 return ((string)(this["DatabaseConnectionString"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\Responses.mdf" +
+            ";Integrated Security=True")]
+        public string ResponsesConnectionString {
+            get {
+                return ((string)(this["ResponsesConnectionString"]));
+            }
+        }
     }
 }

@@ -48,6 +48,7 @@
             this.comboBox_SearchType = new System.Windows.Forms.ComboBox();
             this.label_SearchValue = new System.Windows.Forms.Label();
             this.textBox_Search = new System.Windows.Forms.TextBox();
+            this.button_GetTable = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_Database)).BeginInit();
             this.SuspendLayout();
             // 
@@ -94,7 +95,7 @@
             // 
             this.button_Watch.Location = new System.Drawing.Point(12, 57);
             this.button_Watch.Name = "button_Watch";
-            this.button_Watch.Size = new System.Drawing.Size(221, 23);
+            this.button_Watch.Size = new System.Drawing.Size(115, 23);
             this.button_Watch.TabIndex = 4;
             this.button_Watch.Text = "Watch";
             this.button_Watch.UseVisualStyleBackColor = true;
@@ -239,11 +240,22 @@
             this.textBox_Search.TabIndex = 17;
             this.textBox_Search.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
+            // button_GetTable
+            // 
+            this.button_GetTable.Location = new System.Drawing.Point(133, 57);
+            this.button_GetTable.Name = "button_GetTable";
+            this.button_GetTable.Size = new System.Drawing.Size(100, 23);
+            this.button_GetTable.TabIndex = 19;
+            this.button_GetTable.Text = "GetTable";
+            this.button_GetTable.UseVisualStyleBackColor = true;
+            this.button_GetTable.Click += new System.EventHandler(this.button_GetTable_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 411);
+            this.Controls.Add(this.button_GetTable);
             this.Controls.Add(this.label_SearchValue);
             this.Controls.Add(this.textBox_Search);
             this.Controls.Add(this.label_SearchType);
@@ -296,6 +308,7 @@
         private System.Windows.Forms.ComboBox comboBox_SearchType;
         private System.Windows.Forms.Label label_SearchValue;
         private System.Windows.Forms.TextBox textBox_Search;
+        private System.Windows.Forms.Button button_GetTable;
     }
 }
 

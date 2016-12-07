@@ -16,16 +16,43 @@ namespace Zst_Projekt_EtapII
     public partial class Form1 : Form
     {
         #region SNMP_Variables
-        string resultString;
-        int watchIterations;
-        System.Timers.Timer GeneratorsTimer = new System.Timers.Timer();
-        List<string> lstOID = new List<string>();
-        List<string> lstObjectName = new List<string>();
-        int objectAmmount;
-        string agentsIP = "127.0.0.1";
-        string oid;
-        int numberOfIterations;
+        string _agentsIP;
+        int _clientListeningPort;
+
+        int _objectAmmount;
+        List<string> _lstOID;
+        List<string> _lstObjectName;
+
+        int _tableObjectsAmmount;
+        List<string> _lstTableOID;
+        List<string> _lstTableName;
+
+        OctetString _community;
+        AgentParameters _param;
+
+        string _resultString;
+        Oid _oid;
+        
+        System.Timers.Timer GeneratorsTimer;
+        int _numberOfIterations;
+        int _watchIterations;
         #endregion
+
+        #region Public Variables
+        public int TableObjectAmmount
+        {
+            get { return _tableObjectsAmmount; }
+        }
+        public List<string> TableOID
+        {
+            get { return _lstTableOID; }
+        }
+        public List<string> TableName
+        {
+            get { return _lstTableName; }
+        }
+        #endregion
+
 
         #region Database_Variables
         private SqlConnection sqlConnection;
@@ -39,149 +66,272 @@ namespace Zst_Projekt_EtapII
         {
             InitializeComponent();
 
+            InitializeLocalParameters();
             InitializeDataBaseComponent();
         }
 
-        #region SNMP_Methodes
 
-        private void Get()
+        #region Another_Methodes
+        private void InitializeLocalParameters()
         {
-            OctetString community = new OctetString("public");
-            AgentParameters param = new AgentParameters(community);
-            param.Version = SnmpVersion.Ver2;
-            IpAddress agent = new IpAddress(agentsIP);
+            _agentsIP = null;
+            _clientListeningPort = 162;
 
-            UdpTarget target = new UdpTarget((IPAddress)agent, 161, 2000, 1);
-            // Pdu class used for all requests
-            Pdu pdu = new Pdu(PduType.Get);
-            //pdu.VbList.Add("1.3.6.1.2.1.1.1.0"); //sysDescr //OID + VALUE
-            //pdu.VbList.Add("1.3.6.1.2.1.1.2.0"); //sysObjectID
-            //pdu.VbList.Add("1.3.6.1.2.1.1.3.0"); //sysUpTime
-            //pdu.VbList.Add("1.3.6.1.2.1.1.4.0"); //sysContact
-            //pdu.VbList.Add("1.3.6.1.2.1.1.5.0"); //sysName
+            _lstObjectName = new List<string>();
+            _lstOID = new List<string>();
 
-            string oid = whatShouldIAdd("Adding new property to PDU list");
-            pdu.VbList.Add(oid);
+            GeneratorsTimer = new System.Timers.Timer();
 
-            // Make SNMP request
-            SnmpV2Packet result = (SnmpV2Packet)target.Request(pdu, param);
+            _community = new OctetString("public");
+            _param = new AgentParameters(_community);
+            _param.Version = SnmpVersion.Ver2;
+        }
 
-            // If result is null then agent didn't reply or we couldn't parse the reply.
-            if (result != null)
+        /*
+         * Metoda przypisuje adres IP, gdy tylko wpiszemy go w odpowiednie miejsce.
+         */
+        private void textBox_IP_TextChanged(object sender, EventArgs e)
+        {
+            _agentsIP = textBox_IP.Text;
+        }
+
+        private void button_Path_Click(object sender, EventArgs e)
+        {
+            // Configure open file dialog box
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.FileName = "MIB Dictionary"; // Default file name
+            openFileDialog.InitialDirectory = @"C:\";
+            openFileDialog.RestoreDirectory = true;
+            openFileDialog.DefaultExt = "xml";
+            openFileDialog.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
+            openFileDialog.CheckFileExists = true;
+            openFileDialog.CheckPathExists = true;
+
+            // Process open file dialog box results
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                // ErrorStatus other then 0 is an error returned by 
-                // the Agent - see SnmpConstants for error definitions
-                if (result.Pdu.ErrorStatus != 0)
-                {
-                    // agent reported an error with the request
-                    Console.WriteLine("Error in SNMP reply. Error {0} index {1}",
-                        result.Pdu.ErrorStatus,
-                        result.Pdu.ErrorIndex);
-                }
-                else
-                {
-
-                    //DATABASE adding
-                    string newName = "";
-                    this.Invoke(new MethodInvoker(delegate () { newName = cbObjects.Text; }));
-                    string newOid = result.Pdu.VbList[0].Oid.ToString();
-                    string newValue = result.Pdu.VbList[0].Value.ToString();
-                    string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
-                    string newIp = agentsIP;
-
-                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
-                }
+                tbFilepath.Text = openFileDialog.FileName;
             }
-
-        }
-        private void button_Get_Click(object sender, EventArgs e)
-        {
-            Get();
-           
         }
 
-        private void button_GetNext_Click(object sender, EventArgs e)
+        /*
+         * Metoda zwracająca numer OID skojarzony z wybraną nazwą w kontrolce. 
+         */
+        private Oid whatShouldIAdd()
         {
-            OctetString community = new OctetString("public");
-            AgentParameters param = new AgentParameters(community);
-            param.Version = SnmpVersion.Ver2;
-            IpAddress agent = new IpAddress("127.0.0.1");
+            string cbObjectsText = "";
+            this.Invoke(new MethodInvoker(delegate () { cbObjectsText = cbObjects.Text; }));
 
-            UdpTarget target = new UdpTarget((IPAddress)agent, 161, 2000, 1);
-            // Pdu class used for all requests
-            Pdu pdu = new Pdu(PduType.GetNext);
-            string oid = whatShouldIAdd("Adding new property to PDU list");
-            pdu.VbList.Add(oid);
-
-            // Make SNMP request
-            SnmpV2Packet result = (SnmpV2Packet)target.Request(pdu, param);
-
-            // If result is null then agent didn't reply or we couldn't parse the reply.
-            if (result != null)
-            {
-                // ErrorStatus other then 0 is an error returned by 
-                // the Agent - see SnmpConstants for error definitions
-                if (result.Pdu.ErrorStatus != 0)
+            for (int i = 0; i < _objectAmmount; i++)
+                if (cbObjectsText == _lstObjectName[i])
                 {
-                    // agent reported an error with the request
-                    Console.WriteLine("Error in SNMP reply. Error {0} index {1}",
-                        result.Pdu.ErrorStatus,
-                        result.Pdu.ErrorIndex);
+                    _oid = new Oid(_lstOID[i]);
                 }
-                else
-                {
-                    // Reply variables are returned in the same order as they were added
-                    //  to the VbList
-                    resultString = String.Format("({0}) ({1}): {2}",
-                      result.Pdu.VbList[0].Oid.ToString(),
-                      SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString(),
-                      result.Pdu.VbList[0].Value.ToString());
-                    MessageBox.Show(resultString);
 
-                    //DATABASE adding
-                    string newName = "";
-                    this.Invoke(new MethodInvoker(delegate () { newName = cbObjects.Text; }));
-                    string newOid = result.Pdu.VbList[0].Oid.ToString();
-                    string newValue = result.Pdu.VbList[0].Value.ToString();
-                    string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
-                    string newIp = agentsIP;
-
-                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
-                }
-            }
-
-            else
-            {
-                Console.WriteLine("No response received from SNMP agent.");
-            } 
-            
-        }
-
-        private void button_Watch_Click(object sender, EventArgs e)
-        {
-            WatchForm wf = new WatchForm();
-            wf.ShowDialog();
-
-            numberOfIterations = wf.numberOfIterations;
-            int timeDelay =  wf.timeDelay;
-
-            wf.Dispose();
-
-            string oid = whatShouldIAdd("Adding new property to PDU list");
-            watchIterations = 0; 
-            GeneratorsTimer.Enabled = true;
-            GeneratorsTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-            GeneratorsTimer.Interval = timeDelay;
+            return _oid;
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
             int currIteration = 1;
-            if (currIteration < numberOfIterations)
-            Get();
+            if (currIteration < _numberOfIterations)
+            {
+                GetRequest();
+                currIteration++;
+            }  
             else
-            GeneratorsTimer.Enabled = false;
+                GeneratorsTimer.Enabled = false;
+        }
+        #endregion
 
+        /*
+         * //pdu.VbList.Add("1.3.6.1.2.1.1.1.0"); //sysDescr //OID + VALUE
+         *  //pdu.VbList.Add("1.3.6.1.2.1.1.2.0"); //sysObjectID
+         *  //pdu.VbList.Add("1.3.6.1.2.1.1.3.0"); //sysUpTime
+         *  //pdu.VbList.Add("1.3.6.1.2.1.1.4.0"); //sysContact
+         *  //pdu.VbList.Add("1.3.6.1.2.1.1.5.0"); //sysName
+         */
+        #region SNMP_metodes
+        public SnmpV2Packet GetRequest(Oid oid)
+        {
+            IpAddress agent = new IpAddress(_agentsIP);
+            UdpTarget target = new UdpTarget((IPAddress)agent, 161, 2000, 1);
+
+            // Pdu class used for all requests
+            Pdu pdu = new Pdu(PduType.Get);
+
+            //Adding new property to PDU list
+            pdu.VbList.Add(_oid);
+
+            // Make SNMP request
+            SnmpV2Packet result = (SnmpV2Packet)target.Request(pdu, _param);
+
+            // If result is null then agent didn't reply or we couldn't parse the reply.
+            if (result != null)
+            {
+                // ErrorStatus other then 0 is an error returned by 
+                // the Agent - see SnmpConstants for error definitions
+                if (result.Pdu.ErrorStatus != 0)
+                {
+                    // agent reported an error with the request
+                    string errorMessage = String.Format("Error in SNMP reply. Error {0} index {1}",
+                        result.Pdu.ErrorStatus.ToString(),
+                        result.Pdu.ErrorIndex.ToString());
+                    MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK);
+                    return null;
+                }
+                else
+                {
+                    //DATABASE adding
+                    string newName = "";
+                    this.Invoke(new MethodInvoker(delegate () { newName = cbObjects.Text; }));
+                    string newOid = result.Pdu.VbList[0].Oid.ToString();
+                    string newValue = result.Pdu.VbList[0].Value.ToString();
+                    string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
+                    string newIp = _agentsIP;
+
+                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
+
+                    return result;
+                }
+            }
+            else
+            {
+                MessageBox.Show("No response received from SNMP agent.", "Error", MessageBoxButtons.OK);
+                return null;
+            }
+        }
+        public SnmpV2Packet GetNextRequest(Oid oid)
+        {
+            IpAddress agent = new IpAddress(_agentsIP);
+            UdpTarget target = new UdpTarget((IPAddress)agent, 161, 2000, 1);
+
+            // Pdu class used for all requests
+            Pdu pdu = new Pdu(PduType.GetNext);
+
+            //Adding new property to PDU list
+            pdu.VbList.Add(_oid);
+
+            // Make SNMP request
+            SnmpV2Packet result = (SnmpV2Packet)target.Request(pdu, _param);
+
+            // If result is null then agent didn't reply or we couldn't parse the reply.
+            if (result != null)
+            {
+                // ErrorStatus other then 0 is an error returned by 
+                // the Agent - see SnmpConstants for error definitions
+                if (result.Pdu.ErrorStatus != 0)
+                {
+                    // agent reported an error with the request
+                    string errorMessage = String.Format("Error in SNMP reply. Error {0} index {1}",
+                        result.Pdu.ErrorStatus.ToString(),
+                        result.Pdu.ErrorIndex.ToString());
+                    MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK);
+                    return null;
+                }
+                else
+                {
+                    // Reply variables are returned in the same order as they were added
+                    //  to the VbList
+
+                    //DATABASE adding
+                    string newName = "";
+                    this.Invoke(new MethodInvoker(delegate () { newName = cbObjects.Text; }));
+                    string newOid = result.Pdu.VbList[0].Oid.ToString();
+                    string newValue = result.Pdu.VbList[0].Value.ToString();
+                    string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
+                    string newIp = _agentsIP;
+
+                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
+
+                    return result;
+                }
+            }
+            else
+            {
+                MessageBox.Show("No response received from SNMP agent.", "Error",MessageBoxButtons.OK);
+                return null;
+            }
+        }
+        
+        
+        private void GetRequest()
+        {
+            _oid = whatShouldIAdd();
+            GetRequest(_oid);
+        }
+        private void GetNextRequest()
+        {
+            _oid = whatShouldIAdd();
+            GetNextRequest(_oid);
+        }
+        #endregion
+
+        #region ButtonSNMP_Methodes
+        private void button_Get_Click(object sender, EventArgs e)
+        {
+            if(_objectAmmount == 0 || _agentsIP == null)
+                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
+            else
+                GetRequest();
+        }
+
+        private void button_GetNext_Click(object sender, EventArgs e)
+        {
+            if (_objectAmmount == 0 || _agentsIP == null)
+                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
+            else
+                GetNextRequest();
+        }
+
+        private void button_Watch_Click(object sender, EventArgs e)
+        {
+            if (_objectAmmount == 0 || _agentsIP == null)
+                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
+            else
+            {
+
+
+                WatchForm wf = new WatchForm();
+                wf.ShowDialog();
+
+                if(wf.okClicked)
+                {
+                    _numberOfIterations = wf.numberOfIterations;
+                    int timeDelay = wf.timeDelay;
+
+                    _oid = whatShouldIAdd();
+                    _watchIterations = 0;
+
+                    GeneratorsTimer.Enabled = true;
+                    GeneratorsTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+                    GeneratorsTimer.Interval = timeDelay;
+                }
+                wf.Dispose();
+            }
+        }
+
+        private void button_GetTable_Click(object sender, EventArgs e)
+        {
+            if (_objectAmmount == 0 || _agentsIP == null)
+                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
+            else
+            {
+                //ukrywam obecny formularz
+                this.Visible = false;
+
+                //tworzę specjalne okienko
+                TableViewerForm tableViewer = new TableViewerForm(this);
+                tableViewer.ShowDialog(this);
+
+                //zapisuje logi do naszej bazy danych
+
+                //po wykonaniu czynności
+                tableViewer.Dispose();
+
+                //pokazuje obecny formularz
+                this.Visible = true;
+            }
         }
 
         private void button_Load_Click(object sender, EventArgs e)
@@ -193,54 +343,50 @@ namespace Zst_Projekt_EtapII
             try
             {
                 xDoc.Load(ofd.FileName);
-                objectAmmount = Int32.Parse(xDoc.SelectSingleNode("MIB/Data/objectAmmount").InnerText);
-               
+                _objectAmmount = Int32.Parse(xDoc.SelectSingleNode("MIB/Data/objectAmmount").InnerText);
 
-                for (int i = 0; i < objectAmmount; i++)
+                for (int i = 0; i < _objectAmmount; ++i)
                 {
                     string path = string.Format("MIB/Data/pair{0}/OID", i);
                     string value = xDoc.SelectSingleNode(path).InnerText;
 
-                    lstOID.Add(value);
-
+                    _lstOID.Add(value);
                 }
-                for (int i = 0; i < objectAmmount; ++i)
+
+                for (int i = 0; i < _objectAmmount; ++i)
                 {
                     string path = String.Format("MIB/Data/pair{0}/objectName", i);
                     string value = xDoc.SelectSingleNode(path).InnerText;
                     cbObjects.Items.Add(value);
-                    lstObjectName.Add(value);
+                    _lstObjectName.Add(value);
                 }
                 string MIBname = tbFilepath.Text.Split(new[] { "MIB" }, StringSplitOptions.None)[1];
                 char[] MyChar = { '.', 'x', 'm', 'l'};
                 MIBname = MIBname.TrimEnd(MyChar);
                 
-                string showString = "MIB has been successfully loaded!" + Environment.NewLine + "MIB name: " + MIBname + Environment.NewLine + "Ammount of objects: " + objectAmmount;
-                MessageBox.Show(showString);
+                string showString = "MIB has been successfully loaded!" + Environment.NewLine + "MIB name: " + MIBname + Environment.NewLine + "Ammount of objects: " + _objectAmmount;
+                MessageBox.Show(showString, "Information",MessageBoxButtons.OK);
             }
             catch
             {
-                MessageBox.Show("No such file or directory");
-
+                MessageBox.Show("No such file or directory", "Error", MessageBoxButtons.OK);
             }
-        }
 
-        private string whatShouldIAdd(string oid)
-        {
-            string cbObjectsText = "";
-            this.Invoke(new MethodInvoker(delegate () { cbObjectsText = cbObjects.Text; }));
-            for (int i = 0; i < objectAmmount; ++i)
-                if (cbObjectsText == lstObjectName[i])
-                {
-                    oid = lstOID[i];
-                }
-            return oid;
+
+            ///test
+            string testOID = ".1.3.6.1.2.1.4.20";
+            string testName = "ipAddrTable";
+
+            _lstTableOID = new List<string>();
+            _lstTableName = new List<string>();
+
+            _lstTableOID.Add(testOID);
+            _lstTableName.Add(testName);
 
         }
         #endregion
 
         #region Database_Methodes
-
         /*
          * Metoda inicjalizuje wszystkie zmienne niezbędne do poprawnej pracy bazy danych.
          */
@@ -415,10 +561,7 @@ namespace Zst_Projekt_EtapII
             this.Invoke(new Action(() => { button_Refresh.PerformClick(); }));
         }
         #endregion
-        private void button_GetTable_Click(object sender, EventArgs e)
-        {
-            //Sprawdzamy czy OID jest tabelą
-        }
+
 
     }
 }

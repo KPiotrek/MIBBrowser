@@ -85,7 +85,7 @@ namespace Zst_Projekt_EtapII
             while (true)
             {
                 //make GetNext
-                localResult = _mainForm.GetNextRequest(startOid);
+                localResult = _mainForm.GetNextRequest(currentOid);
 
                 //set prev before changing current
                 prevOid = currentOid;
@@ -101,17 +101,24 @@ namespace Zst_Projekt_EtapII
                     // if startOid = .1.1 and currentOid = .1.1.2.1 result will be [0] = 2 [1] = 1
                     uint[] currentChildOids = Oid.GetChildIdentifiers(startOid, currentOid);
 
-                    //the first element is always name of column (new parameter in table)
-                    if (currentChildOids[0] > prevChildOids[0])
-                    {
-                        //it means, currentOid is showing another column (parameter)
-                        //adding another column!
+                    //first column
+                    if((prevOid == startOid))
                         table.Add(new List<string>());
-                    }
 
+                    //next columns
+                    if (currentChildOids != null && prevChildOids != null)
+                    {
+                        //the first element is always name of column (new parameter in table)
+                        if ((currentChildOids[0] > prevChildOids[0]))
+                        {
+                            //it means, currentOid is showing another column (parameter)
+                            //adding another column!
+                            table.Add(new List<string>());
+                        }
+                    }
+                    
                     //saving the values
-                    table[table.Count].Add(localResult.Pdu.VbList[0].Value.ToString());
-                    prevOid = currentOid;
+                    table[table.Count-1].Add(localResult.Pdu.VbList[0].Value.ToString());
                 }
                 else
                 {

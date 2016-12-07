@@ -210,7 +210,7 @@ namespace Zst_Projekt_EtapII
             Pdu pdu = new Pdu(PduType.GetNext);
 
             //Adding new property to PDU list
-            pdu.VbList.Add(_oid);
+            pdu.VbList.Add(oid);
 
             // Make SNMP request
             SnmpV2Packet result = (SnmpV2Packet)target.Request(pdu, _param);
@@ -382,6 +382,8 @@ namespace Zst_Projekt_EtapII
 
             _lstTableOID.Add(testOID);
             _lstTableName.Add(testName);
+
+            _tableObjectsAmmount = 1;
 
         }
         #endregion

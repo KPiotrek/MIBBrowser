@@ -253,8 +253,7 @@ namespace Zst_Projekt_EtapII
                 return null;
             }
         }
-        
-        
+               
         private void GetRequest()
         {
             _oid = whatShouldIAdd();
@@ -313,25 +312,21 @@ namespace Zst_Projekt_EtapII
 
         private void button_GetTable_Click(object sender, EventArgs e)
         {
-            if (_objectAmmount == 0 || _agentsIP == null)
-                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
-            else
-            {
-                //ukrywam obecny formularz
-                this.Visible = false;
+            //ukrywam obecny formularz
+            this.Visible = false;
 
-                //tworzę specjalne okienko
-                TableViewerForm tableViewer = new TableViewerForm(this);
-                tableViewer.ShowDialog(this);
+            //tworzę specjalne okienko
+            TableViewerForm tableViewer = new TableViewerForm(this);
+            tableViewer.ShowDialog(this);
 
-                //zapisuje logi do naszej bazy danych
+            //zapisuje logi do naszej bazy danych
 
-                //po wykonaniu czynności
-                tableViewer.Dispose();
+            //po wykonaniu czynności
+            tableViewer.Dispose();
 
-                //pokazuje obecny formularz
-                this.Visible = true;
-            }
+            //pokazuje obecny formularz
+            this.Visible = true;
+
         }
 
         private void button_Load_Click(object sender, EventArgs e)

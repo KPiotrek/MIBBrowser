@@ -1,12 +1,7 @@
 ﻿using SnmpSharpNet;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Zst_Projekt_EtapII
@@ -21,41 +16,28 @@ namespace Zst_Projekt_EtapII
             InitializeComponent();
 
             _mainForm = mainForm;
-            InitializeComboBox();
         }
 
-        private void InitializeComboBox()
+        private void button_Table_Back_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < _mainForm.TableObjectAmmount; i++)
-            {
-                comboBox_TableName.Items.Add(_mainForm.TableName[i]);
-                comboBox_TableOID.Items.Add(_mainForm.TableOID[i]);
-            }
-        }
-
-        private void button_Table_GetTable_Click(object sender, EventArgs e)
-        {
-            //oczytuje nazwe
-            string name = comboBox_TableName.Text;
-
-            //wyszukuje OID
-            for (int i = 0; i < _mainForm.TableObjectAmmount; i++)
-                if (name == _mainForm.TableName[i])
-                {
-                    _oid = new Oid(_mainForm.TableOID[i]);
-                }
-
-            //wywołanie metody GetTable
-            GetTable(_oid);
+            this.Visible = false;
         }
 
         private void button_Table_GetTableOID_Click(object sender, EventArgs e)
         {
-            //odczytuje OID
-            _oid = new Oid(comboBox_TableOID.Text);
+            if(textBox_Table_OID.Text == "")
+            {
+                MessageBox.Show("Please, type OID first...", "ERROR", MessageBoxButtons.OK);
+            }
+            else
+            {
+                //odczytuje OID
+                    _oid = new Oid(textBox_Table_OID.Text);
+                    
+                    //wywołanie metody GetTable
+                    GetTable(_oid);
 
-            //wywołanie metody GetTable
-            GetTable(_oid);
+            }   
         }
 
         private void GetTable(Oid oid)
@@ -65,6 +47,7 @@ namespace Zst_Projekt_EtapII
             //table[n] wskazuje kolumny
             //table[n][m] wskazuje konkretne komórki
             List<List<String>> table = new List<List<String>>();
+            List<string> columnOID = new List<string>();
 
             // This is the table OID supplied on the command line
             Oid startOid = oid;
@@ -103,7 +86,13 @@ namespace Zst_Projekt_EtapII
 
                     //first column
                     if((prevOid == startOid))
+                    {
                         table.Add(new List<string>());
+                        Oid columnOid = (Oid)startOid.Clone();
+                        columnOid.Add(currentChildOids[0]);
+                        columnOID.Add(columnOid.ToString());
+                    }
+                        
 
                     //next columns
                     if (currentChildOids != null && prevChildOids != null)
@@ -114,6 +103,9 @@ namespace Zst_Projekt_EtapII
                             //it means, currentOid is showing another column (parameter)
                             //adding another column!
                             table.Add(new List<string>());
+                            Oid columnOid = (Oid)startOid.Clone();
+                            columnOid.Add(currentChildOids[0]);
+                            columnOID.Add(columnOid.ToString());
                         }
                     }
                     
@@ -127,8 +119,7 @@ namespace Zst_Projekt_EtapII
                     break;
                 }
 
-            }
-
+            }//end of while
 
             /*
              * startOid - początkowe .1.0
@@ -138,7 +129,44 @@ namespace Zst_Projekt_EtapII
              * curOid musi zawierać całe startOid i być dłuższe aby while działał
              * 
              */
-            Console.ReadLine();
+
+            ShowTable(columnOID, table);
         }
+
+        private void ShowTable(List<string> columnOID, List<List<String>> table)
+        {
+            DataTable myTable = new DataTable();
+            DataColumn dtColumn;
+            DataRow myDataRow;
+
+            for(int i=0; i<columnOID.Count; i++)
+            {
+                dtColumn = new DataColumn();
+                dtColumn.DataType = System.Type.GetType("System.String");
+                dtColumn.ColumnName = columnOID[i];
+                myTable.Columns.Add(dtColumn);
+            }
+
+            //kolumny
+            //for(int k=0; k<table.Count; k++)
+            //{
+                //wiersze
+                for (int w = 0; w < table[0].Count; w++)
+                {
+                    myDataRow = myTable.NewRow();
+
+                    //uzupełniam cały wiersz
+                    for (int n = 0; n < table.Count; n++)
+                        myDataRow[myTable.Columns[n]] = table[n][w];
+
+                    myTable.Rows.Add(myDataRow);
+                }
+            //}
+
+            dataGridView_TABLE.DataSource = myTable;
+
+
+        }
+        
     }
 }

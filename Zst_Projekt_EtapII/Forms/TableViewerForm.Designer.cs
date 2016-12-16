@@ -28,114 +28,63 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
-            this.comboBox_TableName = new System.Windows.Forms.ComboBox();
-            this.button_Table_GetTable = new System.Windows.Forms.Button();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.dataGridView_TABLE = new System.Windows.Forms.DataGridView();
             this.button_Table_Back = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.comboBox_TableOID = new System.Windows.Forms.ComboBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.button_Table_GetTableOID = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.textBox_Table_OID = new System.Windows.Forms.TextBox();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_TABLE)).BeginInit();
             this.SuspendLayout();
             // 
-            // label1
+            // dataGridView_TABLE
             // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label1.Location = new System.Drawing.Point(14, 66);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(246, 20);
-            this.label1.TabIndex = 23;
-            this.label1.Text = "Choose table name:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // comboBox_TableName
-            // 
-            this.comboBox_TableName.FormattingEnabled = true;
-            this.comboBox_TableName.Location = new System.Drawing.Point(14, 89);
-            this.comboBox_TableName.Name = "comboBox_TableName";
-            this.comboBox_TableName.Size = new System.Drawing.Size(246, 21);
-            this.comboBox_TableName.TabIndex = 22;
-            // 
-            // button_Table_GetTable
-            // 
-            this.button_Table_GetTable.Location = new System.Drawing.Point(14, 127);
-            this.button_Table_GetTable.Name = "button_Table_GetTable";
-            this.button_Table_GetTable.Size = new System.Drawing.Size(246, 31);
-            this.button_Table_GetTable.TabIndex = 22;
-            this.button_Table_GetTable.Text = "Get Table by Name";
-            this.button_Table_GetTable.UseVisualStyleBackColor = true;
-            this.button_Table_GetTable.Click += new System.EventHandler(this.button_Table_GetTable_Click);
-            // 
-            // dataGridView1
-            // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.AllowUserToResizeColumns = false;
-            this.dataGridView1.AllowUserToResizeRows = false;
-            this.dataGridView1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataGridView1.BackgroundColor = System.Drawing.SystemColors.Window;
-            this.dataGridView1.CausesValidation = false;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.dataGridView1.EnableHeadersVisualStyles = false;
-            this.dataGridView1.GridColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.dataGridView1.Location = new System.Drawing.Point(14, 164);
-            this.dataGridView1.MultiSelect = false;
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
-            this.dataGridView1.Size = new System.Drawing.Size(558, 249);
-            this.dataGridView1.TabIndex = 22;
+            this.dataGridView_TABLE.AllowUserToAddRows = false;
+            this.dataGridView_TABLE.AllowUserToDeleteRows = false;
+            this.dataGridView_TABLE.AllowUserToResizeColumns = false;
+            this.dataGridView_TABLE.AllowUserToResizeRows = false;
+            this.dataGridView_TABLE.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.dataGridView_TABLE.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridView_TABLE.BackgroundColor = System.Drawing.SystemColors.Window;
+            this.dataGridView_TABLE.CausesValidation = false;
+            this.dataGridView_TABLE.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView_TABLE.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
+            this.dataGridView_TABLE.EnableHeadersVisualStyles = false;
+            this.dataGridView_TABLE.GridColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.dataGridView_TABLE.Location = new System.Drawing.Point(14, 109);
+            this.dataGridView_TABLE.MultiSelect = false;
+            this.dataGridView_TABLE.Name = "dataGridView_TABLE";
+            this.dataGridView_TABLE.ReadOnly = true;
+            this.dataGridView_TABLE.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
+            this.dataGridView_TABLE.Size = new System.Drawing.Size(560, 249);
+            this.dataGridView_TABLE.TabIndex = 22;
             // 
             // button_Table_Back
             // 
-            this.button_Table_Back.Location = new System.Drawing.Point(12, 419);
+            this.button_Table_Back.Location = new System.Drawing.Point(14, 364);
             this.button_Table_Back.Name = "button_Table_Back";
             this.button_Table_Back.Size = new System.Drawing.Size(560, 30);
             this.button_Table_Back.TabIndex = 24;
             this.button_Table_Back.Text = "BACK";
             this.button_Table_Back.UseVisualStyleBackColor = true;
+            this.button_Table_Back.Click += new System.EventHandler(this.button_Table_Back_Click);
             // 
             // label2
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label2.Location = new System.Drawing.Point(326, 66);
+            this.label2.Location = new System.Drawing.Point(12, 48);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(246, 20);
             this.label2.TabIndex = 26;
             this.label2.Text = "Choose table OID:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // comboBox_TableOID
-            // 
-            this.comboBox_TableOID.FormattingEnabled = true;
-            this.comboBox_TableOID.Location = new System.Drawing.Point(325, 89);
-            this.comboBox_TableOID.Name = "comboBox_TableOID";
-            this.comboBox_TableOID.Size = new System.Drawing.Size(246, 21);
-            this.comboBox_TableOID.TabIndex = 25;
-            // 
-            // label3
-            // 
-            this.label3.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label3.Location = new System.Drawing.Point(279, 66);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(27, 20);
-            this.label3.TabIndex = 27;
-            this.label3.Text = "OR";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
             // label4
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label4.Font = new System.Drawing.Font("PanRoman", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(2)));
-            this.label4.Location = new System.Drawing.Point(14, 9);
+            this.label4.Font = new System.Drawing.Font("Georgia", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label4.Location = new System.Drawing.Point(17, 9);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(557, 31);
             this.label4.TabIndex = 28;
@@ -144,51 +93,50 @@
             // 
             // button_Table_GetTableOID
             // 
-            this.button_Table_GetTableOID.Location = new System.Drawing.Point(325, 127);
+            this.button_Table_GetTableOID.Location = new System.Drawing.Point(328, 48);
             this.button_Table_GetTableOID.Name = "button_Table_GetTableOID";
-            this.button_Table_GetTableOID.Size = new System.Drawing.Size(246, 31);
+            this.button_Table_GetTableOID.Size = new System.Drawing.Size(246, 55);
             this.button_Table_GetTableOID.TabIndex = 29;
-            this.button_Table_GetTableOID.Text = "Get Table by OID";
+            this.button_Table_GetTableOID.Text = "Get Table";
             this.button_Table_GetTableOID.UseVisualStyleBackColor = true;
             this.button_Table_GetTableOID.Click += new System.EventHandler(this.button_Table_GetTableOID_Click);
+            // 
+            // textBox_Table_OID
+            // 
+            this.textBox_Table_OID.Location = new System.Drawing.Point(14, 71);
+            this.textBox_Table_OID.Name = "textBox_Table_OID";
+            this.textBox_Table_OID.Size = new System.Drawing.Size(301, 20);
+            this.textBox_Table_OID.TabIndex = 30;
             // 
             // TableViewerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(584, 461);
+            this.ClientSize = new System.Drawing.Size(584, 399);
+            this.Controls.Add(this.textBox_Table_OID);
             this.Controls.Add(this.button_Table_GetTableOID);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.comboBox_TableOID);
             this.Controls.Add(this.button_Table_Back);
-            this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.button_Table_GetTable);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.comboBox_TableName);
+            this.Controls.Add(this.dataGridView_TABLE);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "TableViewerForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "TableViewerForm";
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView_TABLE)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBox_TableName;
-        private System.Windows.Forms.Button button_Table_GetTable;
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView dataGridView_TABLE;
         private System.Windows.Forms.Button button_Table_Back;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox comboBox_TableOID;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button button_Table_GetTableOID;
+        private System.Windows.Forms.TextBox textBox_Table_OID;
     }
 }

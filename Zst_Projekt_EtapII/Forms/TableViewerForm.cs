@@ -11,6 +11,7 @@ namespace Zst_Projekt_EtapII
         Form1 _mainForm;
         Oid _oid;
 
+
         public TableViewerForm(Form1 mainForm)
         {
             InitializeComponent();
@@ -18,26 +19,29 @@ namespace Zst_Projekt_EtapII
             _mainForm = mainForm;
         }
 
+
         private void button_Table_Back_Click(object sender, EventArgs e)
         {
             this.Visible = false;
         }
-
         private void button_Table_GetTableOID_Click(object sender, EventArgs e)
         {
-            if(textBox_Table_OID.Text == "")
+            if (textBox_Table_OID.Text == "")
             {
-                MessageBox.Show("Please, type OID first...", "ERROR", MessageBoxButtons.OK);
+                MessageBox.Show("Please, type OID first...", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
                 //odczytuje OID
-                    _oid = new Oid(textBox_Table_OID.Text);
-                    
-                    //wywołanie metody GetTable
-                    GetTable(_oid);
+                _oid = new Oid(textBox_Table_OID.Text);
 
-            }   
+
+                //wyłącz przycisk do momentu pojawienia się wyników
+                button_Table_GetTableOID.Enabled = false;
+
+                //wywołanie metody GetTable
+                GetTable(_oid);
+            } 
         }
 
         private void GetTable(Oid oid)
@@ -132,25 +136,27 @@ namespace Zst_Projekt_EtapII
 
             ShowTable(columnOID, table);
         }
-
+        
         private void ShowTable(List<string> columnOID, List<List<String>> table)
         {
             DataTable myTable = new DataTable();
             DataColumn dtColumn;
             DataRow myDataRow;
 
-            for(int i=0; i<columnOID.Count; i++)
+            if (table.Count == 0)
             {
-                dtColumn = new DataColumn();
-                dtColumn.DataType = System.Type.GetType("System.String");
-                dtColumn.ColumnName = columnOID[i];
-                myTable.Columns.Add(dtColumn);
+                MessageBox.Show("No results returned.", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            else
+            {
+                for (int i = 0; i < columnOID.Count; i++)
+                {
+                    dtColumn = new DataColumn();
+                    dtColumn.DataType = System.Type.GetType("System.String");
+                    dtColumn.ColumnName = columnOID[i];
+                    myTable.Columns.Add(dtColumn);
+                }
 
-            //kolumny
-            //for(int k=0; k<table.Count; k++)
-            //{
-                //wiersze
                 for (int w = 0; w < table[0].Count; w++)
                 {
                     myDataRow = myTable.NewRow();
@@ -160,13 +166,21 @@ namespace Zst_Projekt_EtapII
                         myDataRow[myTable.Columns[n]] = table[n][w];
 
                     myTable.Rows.Add(myDataRow);
+
+                }      
+
+                //wyświetlanie tabeli
+                dataGridView_TABLE.DataSource = myTable;
+
+                //wyłączenie sortowania
+                foreach (DataGridViewColumn column in dataGridView_TABLE.Columns)
+                {
+                    column.SortMode = DataGridViewColumnSortMode.NotSortable;
                 }
-            //}
+            }
 
-            dataGridView_TABLE.DataSource = myTable;
-
-
+            //włacz przycisk po wykonanych czynnościach
+            button_Table_GetTableOID.Enabled = true;
         }
-        
     }
 }

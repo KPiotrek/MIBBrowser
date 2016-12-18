@@ -47,10 +47,6 @@ namespace Zst_Projekt_EtapII
         {
             get { return _lstTableOID; }
         }
-        public List<string> TableName
-        {
-            get { return _lstTableName; }
-        }
         #endregion
 
 
@@ -80,8 +76,6 @@ namespace Zst_Projekt_EtapII
             _lstObjectName = new List<string>();
             _lstOID = new List<string>();
 
-            GeneratorsTimer = new System.Timers.Timer();
-
             _community = new OctetString("public");
             _param = new AgentParameters(_community);
             _param.Version = SnmpVersion.Ver2;
@@ -95,49 +89,21 @@ namespace Zst_Projekt_EtapII
             _agentsIP = textBox_IP.Text;
         }
 
-        private void button_Path_Click(object sender, EventArgs e)
+        private void textBox_OID_TextChanged(object sender, EventArgs e)
         {
-            // Configure open file dialog box
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.FileName = "MIB Dictionary"; // Default file name
-            openFileDialog.InitialDirectory = @"C:\";
-            openFileDialog.RestoreDirectory = true;
-            openFileDialog.DefaultExt = "xml";
-            openFileDialog.Filter = "xml files (*.xml)|*.xml|All files (*.*)|*.*";
-            openFileDialog.CheckFileExists = true;
-            openFileDialog.CheckPathExists = true;
-
-            // Process open file dialog box results
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            try
             {
-                tbFilepath.Text = openFileDialog.FileName;
+                _oid = new Oid(textBox_OID.Text);
             }
-        }
-
-        /*
-         * Metoda zwracająca numer OID skojarzony z wybraną nazwą w kontrolce. 
-         */
-        private Oid whatShouldIAdd()
-        {
-            string cbObjectsText = "";
-            this.Invoke(new MethodInvoker(delegate () { cbObjectsText = cbObjects.Text; }));
-
-            for (int i = 0; i < _objectAmmount; i++)
-                if (cbObjectsText == _lstObjectName[i])
-                {
-                    _oid = new Oid(_lstOID[i]);
-                }
-
-            return _oid;
+            catch { }
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            int currIteration = 1;
-            if (currIteration < _numberOfIterations)
+            if (_watchIterations < _numberOfIterations)
             {
                 GetRequest();
-                currIteration++;
+                _watchIterations++;
             }  
             else
                 GeneratorsTimer.Enabled = false;
@@ -161,6 +127,7 @@ namespace Zst_Projekt_EtapII
             Pdu pdu = new Pdu(PduType.Get);
 
             //Adding new property to PDU list
+            _oid =  new Oid(textBox_OID.Text);
             pdu.VbList.Add(_oid);
 
             // Make SNMP request
@@ -183,14 +150,12 @@ namespace Zst_Projekt_EtapII
                 else
                 {
                     //DATABASE adding
-                    string newName = "";
-                    this.Invoke(new MethodInvoker(delegate () { newName = cbObjects.Text; }));
                     string newOid = result.Pdu.VbList[0].Oid.ToString();
                     string newValue = result.Pdu.VbList[0].Value.ToString();
                     string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
                     string newIp = _agentsIP;
 
-                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
+                    AddItemToDatabase(newOid, newValue, newType, newIp);
 
                     return result;
                 }
@@ -235,14 +200,12 @@ namespace Zst_Projekt_EtapII
                     //  to the VbList
 
                     //DATABASE adding
-                    string newName = "";
-                    this.Invoke(new MethodInvoker(delegate () { newName = cbObjects.Text; }));
                     string newOid = result.Pdu.VbList[0].Oid.ToString();
                     string newValue = result.Pdu.VbList[0].Value.ToString();
                     string newType = SnmpConstants.GetTypeName(result.Pdu.VbList[0].Value.Type).ToString();
                     string newIp = _agentsIP;
-
-                    AddItemToDatabase(newName, newOid, newValue, newType, newIp);
+                    _oid = result.Pdu.VbList[0].Oid;
+                    AddItemToDatabase(newOid, newValue, newType, newIp);
 
                     return result;
                 }
@@ -256,12 +219,10 @@ namespace Zst_Projekt_EtapII
                
         private void GetRequest()
         {
-            _oid = whatShouldIAdd();
             GetRequest(_oid);
         }
         private void GetNextRequest()
         {
-            _oid = whatShouldIAdd();
             GetNextRequest(_oid);
         }
         #endregion
@@ -269,28 +230,26 @@ namespace Zst_Projekt_EtapII
         #region ButtonSNMP_Methodes
         private void button_Get_Click(object sender, EventArgs e)
         {
-            if(_objectAmmount == 0 || _agentsIP == null)
-                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
+            if(_agentsIP == null || textBox_OID.Text == null)
+                MessageBox.Show("Please, enter the right OID and/or IP address.", "Error", MessageBoxButtons.OK);
             else
                 GetRequest();
         }
-
         private void button_GetNext_Click(object sender, EventArgs e)
         {
-            if (_objectAmmount == 0 || _agentsIP == null)
-                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
+            if (textBox_OID.Text == null || _agentsIP == null)
+                MessageBox.Show("Please, enter the right OID and/or IP address.", "Error", MessageBoxButtons.OK);
             else
                 GetNextRequest();
         }
 
+
         private void button_Watch_Click(object sender, EventArgs e)
         {
-            if (_objectAmmount == 0 || _agentsIP == null)
-                MessageBox.Show("Please, load MIB and enter the right IP address.", "Error", MessageBoxButtons.OK);
+            if (textBox_OID.Text == null || _agentsIP == null)
+                MessageBox.Show("Please, enter the right OID and/or IP address.", "Error", MessageBoxButtons.OK);
             else
             {
-
-
                 WatchForm wf = new WatchForm();
                 wf.ShowDialog();
 
@@ -298,89 +257,44 @@ namespace Zst_Projekt_EtapII
                 {
                     _numberOfIterations = wf.numberOfIterations;
                     int timeDelay = wf.timeDelay;
-
-                    _oid = whatShouldIAdd();
                     _watchIterations = 0;
 
-                    GeneratorsTimer.Enabled = true;
+                    GeneratorsTimer = new System.Timers.Timer();
                     GeneratorsTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
                     GeneratorsTimer.Interval = timeDelay;
+                    GeneratorsTimer.Enabled = true; 
                 }
                 wf.Dispose();
             }
         }
-
+        
         private void button_GetTable_Click(object sender, EventArgs e)
         {
-            //ukrywam obecny formularz
-            this.Visible = false;
-
-            //tworzę specjalne okienko
-            TableViewerForm tableViewer = new TableViewerForm(this);
-            tableViewer.ShowDialog(this);
-
-            //zapisuje logi do naszej bazy danych
-
-            //po wykonaniu czynności
-            tableViewer.Dispose();
-
-            //pokazuje obecny formularz
-            this.Visible = true;
-
-        }
-
-        private void button_Load_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-
-            ofd.FileName = tbFilepath.Text;
-            XmlDocument xDoc = new XmlDocument();
-            try
+            if ((_agentsIP == null) || (_agentsIP == ""))
             {
-                xDoc.Load(ofd.FileName);
-                _objectAmmount = Int32.Parse(xDoc.SelectSingleNode("MIB/Data/objectAmmount").InnerText);
-
-                for (int i = 0; i < _objectAmmount; ++i)
-                {
-                    string path = string.Format("MIB/Data/pair{0}/OID", i);
-                    string value = xDoc.SelectSingleNode(path).InnerText;
-
-                    _lstOID.Add(value);
-                }
-
-                for (int i = 0; i < _objectAmmount; ++i)
-                {
-                    string path = String.Format("MIB/Data/pair{0}/objectName", i);
-                    string value = xDoc.SelectSingleNode(path).InnerText;
-                    cbObjects.Items.Add(value);
-                    _lstObjectName.Add(value);
-                }
-                string MIBname = tbFilepath.Text.Split(new[] { "MIB" }, StringSplitOptions.None)[1];
-                char[] MyChar = { '.', 'x', 'm', 'l'};
-                MIBname = MIBname.TrimEnd(MyChar);
-                
-                string showString = "MIB has been successfully loaded!" + Environment.NewLine + "MIB name: " + MIBname + Environment.NewLine + "Ammount of objects: " + _objectAmmount;
-                MessageBox.Show(showString, "Information",MessageBoxButtons.OK);
+                MessageBox.Show("Please, type Address first...", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            catch
+            else
             {
-                MessageBox.Show("No such file or directory", "Error", MessageBoxButtons.OK);
+                //ukrywam obecny formularz
+                this.Visible = false;
+
+                //tworzę specjalne okienko
+                TableViewerForm tableViewer = new TableViewerForm(this);
+                tableViewer.ShowDialog(this);
+
+                //zapisuje logi do naszej bazy danych
+
+                //po wykonaniu czynności
+                tableViewer.Dispose();
+
+                //pokazuje obecny formularz
+                this.Visible = true;
+
+                //wyświetlam wyniki
+                button_Refresh.PerformClick();
             }
-
-
-            ///test
-            string testOID = ".1.3.6.1.2.1.4.20";
-            string testName = "ipAddrTable";
-
-            _lstTableOID = new List<string>();
-            _lstTableName = new List<string>();
-
-            _lstTableOID.Add(testOID);
-            _lstTableName.Add(testName);
-
-            _tableObjectsAmmount = 1;
-
-        }
+        }      
         #endregion
 
         #region Database_Methodes
@@ -392,16 +306,21 @@ namespace Zst_Projekt_EtapII
             //ustawianie connectionString'a - jest to string opisujący gdzie znajduje sie konkretna baza danych
             sqlConnectionString = ConfigurationManager.ConnectionStrings["Zst_Projekt_EtapII.Properties.Settings.ResponsesConnectionString"].ConnectionString;
 
-            //czyścimy baze danych
-            button_RemoveAll.PerformClick();
-
             //uzupełniam comboBoxa wartościami takimi samymi jak nazwy kolumn
-            comboBox_SearchType.Items.Add("Name");
             comboBox_SearchType.Items.Add("OID");
             comboBox_SearchType.Items.Add("Value");
             comboBox_SearchType.Items.Add("Type");
             comboBox_SearchType.Items.Add("IP");
 
+            //uzupełniam comboBoxa zawierającego dozwolone operatory
+            comboBox_Search_Operator.Items.Add("<");
+            comboBox_Search_Operator.Items.Add("<=");
+            comboBox_Search_Operator.Items.Add("=");
+            comboBox_Search_Operator.Items.Add(">=");
+            comboBox_Search_Operator.Items.Add(">");
+
+            //wyświetlam nasza tabelę
+            button_Refresh_Click(this, null);
         }
         /*
          * Metoda pobiera wszystkie dane z bazy danych i wyświetla je w dataGridView
@@ -424,8 +343,13 @@ namespace Zst_Projekt_EtapII
                 //pokazywanie tabeli zdarzeń
                 dataGridView_Database.DataSource = sqlTable;
             }
-        }
 
+            //fokusuje się na ostatnim elemencie
+            if (dataGridView_Database.Rows.Count > 0)
+            {
+                dataGridView_Database.CurrentCell = dataGridView_Database.Rows[dataGridView_Database.Rows.Count - 1].Cells[0];
+            }
+        }
         /*
          * Metoda usuwa zaznaczony wiersz logów.
          */
@@ -458,10 +382,8 @@ namespace Zst_Projekt_EtapII
 
                 //odświeżam widok tabeli zaprezentowanej w polu
                 button_Refresh.PerformClick();
-
             }
         }
-
         /*
          * Metoda usuwa całą zawartośc bazy danych i zeruje licznik ID
          */
@@ -490,9 +412,7 @@ namespace Zst_Projekt_EtapII
 
             //odświeżam widok tabeli zaprezentowanej w polu
             button_Refresh.PerformClick();
-
         }
-
         /*
          * Metoda usuwa całą zawartośc bazy danych i zeruje licznik ID
          */
@@ -507,8 +427,8 @@ namespace Zst_Projekt_EtapII
             {
                 //tworzę polecenie sql zalezne od wyboru użytkownika
                 //SELECT * FROM eventType1 WHERE LogClientName = 'pop';
-                sqlQuery = "SELECT * FROM MainTable WHERE " + comboBox_SearchType.SelectedText
-                    + " = '" + textBox_Search.Text + "';";
+                sqlQuery = "SELECT * FROM MainTable WHERE " + comboBox_SearchType.Text
+                    + " "+ comboBox_Search_Operator.Text + " '" + textBox_Search.Text + "';";
 
                 //comboBox - nazwa kolumny
                 //textBox - szukana wartość (zawsze to będzie string)
@@ -523,23 +443,21 @@ namespace Zst_Projekt_EtapII
                     //pokazywanie tabeli zdarzeń
                     dataGridView_Database.DataSource = sqlTable;
                 }
-            }
-                
+            }        
         }
-
         /*
          * Metoda dodaje nowy wpis do bazy danych.
          */
-        private void AddItemToDatabase(string name, string oid, string value, string type, string ip)
+        private void AddItemToDatabase(string oid, string value, string type, string ip)
         {
-            sqlQuery = "INSERT INTO MainTable VALUES (@Name, @OID, @Value, @Type, @IP)";
+            sqlQuery = "INSERT INTO MainTable VALUES (@OID, @Value, @Type, @IP)";
 
             //using powoduje, że po wyjściu z klamer obiekty się zamkną samoczynnie
             //dataAdapter samoczynnie otwiera połaczenie, wiec nie trzeba pisac sqlConnection.Open();
             using (sqlConnection = new SqlConnection(sqlConnectionString))
             using (sqlCommand = new SqlCommand(sqlQuery, sqlConnection))
             {
-                sqlCommand.Parameters.AddWithValue("@Name", name);
+              //  sqlCommand.Parameters.AddWithValue("@Name", name);
                 sqlCommand.Parameters.AddWithValue("@OID", oid);
                 sqlCommand.Parameters.AddWithValue("@Value", value);
                 sqlCommand.Parameters.AddWithValue("@Type", type);
@@ -559,6 +477,14 @@ namespace Zst_Projekt_EtapII
         }
         #endregion
 
+        private void dataGridView_Database_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -49,7 +49,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SnmpSharpNet">
-      <HintPath>..\..\..\..\Downloads\SnmpSharpNet-bin-0-9-4\Debug\SnmpSharpNet.dll</HintPath>
+      <HintPath>..\..\..\Downloads\SnmpSharpNet-bin-0-9-4\Debug\SnmpSharpNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -73,11 +73,6 @@
     </Compile>
     <Compile Include="Classes\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResponsesDataSet.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ResponsesDataSet.xsd</DependentUpon>
-    </Compile>
     <Compile Include="Forms\TableViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -146,11 +141,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Responses.mdf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Responses_log.ldf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <DependentUpon>Responses.mdf</DependentUpon>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

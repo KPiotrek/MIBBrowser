@@ -44,7 +44,6 @@ namespace Zst_Projekt_EtapII
             } 
         }
 
-
         private void GetTable(Oid oid)
         {
             SnmpV2Packet localResult = new SnmpV2Packet();
@@ -137,6 +136,7 @@ namespace Zst_Projekt_EtapII
 
             ShowTable(columnOID, table);
         }
+        
         private void ShowTable(List<string> columnOID, List<List<String>> table)
         {
             DataTable myTable = new DataTable();
@@ -166,6 +166,7 @@ namespace Zst_Projekt_EtapII
                         myDataRow[myTable.Columns[n]] = table[n][w];
 
                     myTable.Rows.Add(myDataRow);
+
                 }      
 
                 //wyświetlanie tabeli

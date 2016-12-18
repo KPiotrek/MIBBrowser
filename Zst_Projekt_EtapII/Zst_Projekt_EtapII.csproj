@@ -85,14 +85,6 @@
     <Compile Include="Forms\WatchForm.Designer.cs">
       <DependentUpon>WatchForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ResponsesDataSet.cs">
-      <DependentUpon>ResponsesDataSet.xsd</DependentUpon>
-    </Compile>
-    <Compile Include="ResponsesDataSet.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ResponsesDataSet.xsd</DependentUpon>
-    </Compile>
     <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

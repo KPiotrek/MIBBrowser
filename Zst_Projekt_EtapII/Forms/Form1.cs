@@ -47,7 +47,6 @@ namespace Zst_Projekt_EtapII
         {
             get { return _lstTableOID; }
         }
-
         #endregion
 
 
@@ -268,6 +267,7 @@ namespace Zst_Projekt_EtapII
                 wf.Dispose();
             }
         }
+        
         private void button_GetTable_Click(object sender, EventArgs e)
         {
             if ((_agentsIP == null) || (_agentsIP == ""))
